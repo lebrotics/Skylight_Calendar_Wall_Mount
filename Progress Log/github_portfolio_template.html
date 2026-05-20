@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Makerspace Project</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- MAGIC SAUCE: Loads the data purely offline, no server needed -->
+  <script src="progress_data.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc;
+      --text-muted: #94a3b8; --accent: #3b82f6; --border: #334155;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; line-height: 1.6; }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .header-banner { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-bottom: 1px solid var(--border); padding: 3rem 1.5rem; text-align: center; }
+    h1 { font-size: 2.5rem; margin: 0 0 1rem; }
+    h2 { font-size: 1.25rem; font-weight: 700; margin: 0 0 1rem; color: var(--text); }
+    .meta-grid { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 2rem; font-size: 0.9rem; }
+    .meta-label { color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; display: block; font-weight: 600; }
+    .tag { background: #3b82f633; color: #60a5fa; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; margin: 0.25rem; display: inline-block; }
+
+    /* Timeline entries */
+    .log-entry { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+    .log-date { color: var(--text-muted); font-weight: 600; font-size: 0.85rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; }
+    .log-text { font-size: 1.05rem; margin-bottom: 1.5rem; white-space: pre-wrap; }
+    .media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .media-item { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: #000; }
+    .media-item img { width: 100%; height: auto; max-height: 85vh; object-fit: contain; display: block; }
+    .media-item iframe { width: 100%; aspect-ratio: 16 / 9; border: none; display: block; }
+
+    /* Materials section */
+    .materials-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+    .materials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; margin-top: 0.5rem; }
+    .material-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; }
+    .material-type { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem; }
+    .material-type.tool     { color: #f59e0b; }
+    .material-type.material { color: #34d399; }
+    .material-type.supply   { color: #a78bfa; }
+    .material-name { font-weight: 600; font-size: 0.95rem; }
+    .material-brand { color: var(--text-muted); font-size: 0.8rem; margin-top: 0.1rem; }
+    .material-link { display: inline-block; margin-top: 0.4rem; font-size: 0.78rem; color: var(--accent); text-decoration: none; }
+    .material-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="header-banner"><div class="container" id="header-content"></div></div>
+  <div class="container">
+    <div id="materials-container"></div>
+    <div id="timeline-container"></div>
+  </div>
+
+  <script>
+    if (typeof PROJECT_DATA === 'undefined') {
+      document.body.innerHTML = '<div style="text-align:center;padding:5rem;"><h1 style="color:var(--accent);">Missing progress_data.js!</h1><p style="color:var(--text-muted);max-width:500px;margin:0 auto;">Export your project as a ZIP from the mobile app, then extract all files into this same folder to view your timeline offline.</p></div>';
+      throw new Error("Missing data");
+    }
+
+    const { project, materials, updates } = PROJECT_DATA;
+    document.title = project.name + " — Portfolio";
+
+    // ── Header ──────────────────────────────────────────────────────────────────
+    const tagsHtml = (project.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+    document.getElementById('header-content').innerHTML = `
+      <h1>${project.name}</h1>
+      <div class="meta-grid">
+        ${project.category    ? `<div><span class="meta-label">Category</span>${project.category}</div>`      : ''}
+        ${project.total_time  ? `<div><span class="meta-label">Total Time</span>${project.total_time}</div>`  : ''}
+        ${project.description ? `<div><span class="meta-label">About</span>${project.description}</div>`      : ''}
+        <div><span class="meta-label">Updates</span>${project.update_count}</div>
+      </div>
+      ${tagsHtml ? `<div>${tagsHtml}</div>` : ''}
+    `;
+
+    // ── Materials ────────────────────────────────────────────────────────────────
+    if (materials && materials.length > 0) {
+      const order = ['tool', 'material', 'supply'];
+      const sorted = [...materials].sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type));
+      const cardsHtml = sorted.map(m => `
+        <div class="material-card">
+          <div class="material-type ${m.type}">${m.type}</div>
+          <div class="material-name">${m.affiliate_url
+            ? `<a href="${m.affiliate_url}" target="_blank" rel="noopener" class="material-link" style="font-size:0.95rem;font-weight:600;">${m.name}</a>`
+            : m.name}</div>
+          ${m.brand ? `<div class="material-brand">${m.brand}</div>` : ''}
+          ${m.affiliate_url ? `<a href="${m.affiliate_url}" target="_blank" rel="noopener" class="material-link">View product →</a>` : ''}
+        </div>
+      `).join('');
+      document.getElementById('materials-container').innerHTML = `
+        <div class="materials-section">
+          <h2>Tools &amp; Materials</h2>
+          <div class="materials-grid">${cardsHtml}</div>
+        </div>
+      `;
+    }
+
+    // ── Timeline ─────────────────────────────────────────────────────────────────
+    const getEmbedUrl = (url) => {
+      const match = url.match(/^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+      return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
+    };
+
+    let timelineHTML = '';
+    (updates || []).forEach(log => {
+      const hasMedia = log.youtube_url || (log.media_links && log.media_links.length > 0);
+      timelineHTML += `<div class="log-entry">
+        <div class="log-date">${new Date(log.timestamp).toLocaleString()}</div>
+        ${log.text ? `<div class="log-text">${log.text}</div>` : ''}`;
+
+      if (hasMedia) {
+        timelineHTML += `<div class="media-grid">`;
+        if (log.youtube_url) {
+          const embed = getEmbedUrl(log.youtube_url);
+          timelineHTML += embed
+            ? `<div class="media-item"><iframe src="${embed}" allow="fullscreen"></iframe></div>`
+            : `<div class="media-item" style="padding:1rem;background:var(--bg);"><a href="${log.youtube_url}" target="_blank" style="color:var(--accent);">View External Link &rarr;</a></div>`;
+        }
+        (log.media_links || []).forEach(src => {
+          timelineHTML += `<div class="media-item"><img src="${src}" loading="lazy"></div>`;
+        });
+        timelineHTML += `</div>`;
+      }
+      timelineHTML += `</div>`;
+    });
+
+    document.getElementById('timeline-container').innerHTML = timelineHTML || '<p style="color:var(--text-muted);">No updates yet.</p>';
+  </script>
+</body>
+</html>
