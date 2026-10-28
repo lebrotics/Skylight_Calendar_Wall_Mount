@@ -1,0 +1,80 @@
+{
+  "project": {
+    "name": "Skylight calendar wall mount",
+    "description": "Mounting the skylight calendar on a kitchen backsplash without drilling holes.",
+    "category": "Home Improvement",
+    "tags": [
+      "3dprinting",
+      "skylightcalendar",
+      "vhbtape"
+    ],
+    "total_time": "Not tracked",
+    "total_time_ms": 0,
+    "started_at": "2026-05-02T02:27:13.105Z",
+    "completed_at": null,
+    "exported_at": "2026-05-04T12:47:56.027Z",
+    "update_count": 6,
+    "budget_estimated": null,
+    "budget_spent": null
+  },
+  "materials": [
+    {
+      "name": "Extra large picture hanging strips",
+      "brand": "3m command",
+      "type": "material",
+      "cost": null,
+      "affiliate_url": null
+    }
+  ],
+  "links": [],
+  "updates": [
+    {
+      "timestamp": "2026-05-03T17:39:20.027Z",
+      "text": "",
+      "media_links": [
+        "media/2026-05-03_001.jpg"
+      ],
+      "youtube_url": null
+    },
+    {
+      "timestamp": "2026-05-03T17:40:34.820Z",
+      "text": "",
+      "media_links": [
+        "media/2026-05-03_002.jpg"
+      ],
+      "youtube_url": null
+    },
+    {
+      "timestamp": "2026-05-03T17:41:30.441Z",
+      "text": "",
+      "media_links": [
+        "media/2026-05-03_003.jpg"
+      ],
+      "youtube_url": null
+    },
+    {
+      "timestamp": "2026-05-03T17:43:42.563Z",
+      "text": "",
+      "media_links": [
+        "media/2026-05-03_004.jpg"
+      ],
+      "youtube_url": null
+    },
+    {
+      "timestamp": "2026-05-03T17:44:00.898Z",
+      "text": "",
+      "media_links": [
+        "media/2026-05-03_005.jpg"
+      ],
+      "youtube_url": null
+    },
+    {
+      "timestamp": "2026-05-03T18:08:20.591Z",
+      "text": "Using the weight of the calendar to hold and stick the 3m command strips",
+      "media_links": [
+        "media/2026-05-03_006.jpg"
+      ],
+      "youtube_url": null
+    }
+  ]
+}
